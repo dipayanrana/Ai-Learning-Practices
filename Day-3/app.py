@@ -1,24 +1,33 @@
-from flask import Flask
-app = Flask(__name__)
+from flask import Flask, jsonify  
+import numpy as np  
 
-def solve_system(a1, b1, c1, a2, b2, c2):  
+app = Flask(__name__)  
+
+@app.route('/')  
+def home():  
+    return "Vector & Matrix Calculator"  
+
+# Vector Addition Endpoint  
+@app.route('/vector/add/<vector1>/<vector2>')  
+def add_vectors(vector1, vector2):  
     try:  
-        x = (b2 * c1 - b1 * c2) / (a1 * b2 - a2 * b1)  
-        y = (a1 * c2 - a2 * c1) / (a1 * b2 - a2 * b1)  
-        return f"x = {x}, y = {y}"  
-    except ZeroDivisionError:  
-        return "No unique solution!"
+        v1 = np.array(eval(vector1))  # Convert string input to array  
+        v2 = np.array(eval(vector2))  
+        result = (v1 + v2).tolist()   # Convert NumPy array to list for JSON  
+        return jsonify({"result": result})  
+    except Exception as e:  
+        return jsonify({"error": str(e)})  
 
-@app.route('/')
-def home():
-    return "Welcome to the Equation Solver!"
+# Matrix Multiplication Endpoint  
+@app.route('/matrix/multiply/<matrix1>/<matrix2>')  
+def multiply_matrices(matrix1, matrix2):  
+    try:  
+        m1 = np.array(eval(matrix1))  
+        m2 = np.array(eval(matrix2))  
+        result = np.dot(m1, m2).tolist()  
+        return jsonify({"result": result})  
+    except Exception as e:  
+        return jsonify({"error": str(e)})  
 
-@app.route('/solve-system')
-def solve():
-    # Use example values or retrieve parameters from the request
-    result = solve_system(2, 1, 10, 1, -1, 2)
-    return f"Equation Solver Result: {result}"
-
-if __name__ == '__main__':
-    app.run(debug=True)
-
+if __name__ == '__main__':  
+    app.run(debug=True)  
